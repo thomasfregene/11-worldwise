@@ -12,6 +12,7 @@ import styles from "./Map.module.css";
 import { useEffect, useState } from "react";
 import { useGeolocation } from "../hooks/useGeoLocation";
 import Button from "./Button";
+import { useUrlPosition } from "../hooks/useUrlPosition";
 function Map() {
   const { cities } = useCities();
   const [mapPosition, setMapPosition] = useState([40, 0]);
@@ -21,9 +22,7 @@ function Map() {
     getPosition,
   } = useGeolocation();
 
-  const [searchParams] = useSearchParams();
-  const mapLat = searchParams.get("lat");
-  const mapLng = searchParams.get("lng");
+  const [mapLat, mapLng] = useUrlPosition();
 
   useEffect(
     function () {
@@ -34,8 +33,10 @@ function Map() {
 
   useEffect(
     function () {
-      if (geoLocationPosition)
+      if (geoLocationPosition){
         setMapPosition([geoLocationPosition.lat, geoLocationPosition.lng]);
+        setMapPosition([geoLocationPosition.lat, geoLocationPosition.lng]);
+      }
     },
     [geoLocationPosition]
   );
@@ -43,7 +44,7 @@ function Map() {
     <div className={styles.mapContainer}>
       {!geoLocationPosition && (
         <Button type="position" onClick={getPosition}>
-          {isLoadingPosition ? "Loading..." : "use your positio"}
+          {isLoadingPosition ? "Loading..." : "use your position"}
         </Button>
       )}
       <MapContainer
@@ -54,7 +55,8 @@ function Map() {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.fr/hot/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
         />
         {cities.map((city) => (
           <Marker
@@ -83,8 +85,7 @@ function DetectClick() {
   const navigate = useNavigate();
   useMapEvent({
     click: (e) => {
-      console.log(e);
-      navigate(`form?${e.latlng.lat}&${e.latlng.lng}`);
+      navigate(`form?lat=${e.latlng.lat}&lng=${e.latlng.lng}`);
     },
   });
 }
